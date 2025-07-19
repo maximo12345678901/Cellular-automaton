@@ -11,10 +11,12 @@ public class CellManaging : MonoBehaviour
     public Texture2D texture;
     public Renderer meshRenderer;
 
-    public int spawnRarity1 = 10;
+    public int spawnRarity1 = 0;
     public int spawnRarity2 = 0;
     public int spawnRarity3 = 0;
     public int spawnRarity4 = 0;
+    public int drawingRadius = 2;
+    public int erasingRadius = 4;
     public double updateInterval = 1d;
     private float timer = 0f;
     private bool paused = true;
@@ -69,8 +71,6 @@ public class CellManaging : MonoBehaviour
 
     void Update()
     {
-        Draw();
-        UpdateTexture();
         if (!paused)
         {
             timer += Time.deltaTime;
@@ -118,18 +118,38 @@ public class CellManaging : MonoBehaviour
                         if (currentState == ruleCurrent && livingNeighbors == ruleNeighbors)
                         {
                             newStates[x, y] = ruleNext;
-                            goto NextCell; // Skip further rules once matched
+                            continue;
                         }
                     }
 
-                    newStates[x, y] = currentState; // Default: retain current state
-
-                NextCell:;
+                    if (newStates[x, y] == 1)
+                    {
+                        texture.SetPixel(x, y, Color.white);
+                    }
+                    else if (newStates[x, y] == 2)
+                    {
+                        texture.SetPixel(x, y, Color.red);
+                    }
+                    else if (newStates[x, y] == 3)
+                    {
+                        texture.SetPixel(x, y, Color.blue);
+                    }
+                    else if (newStates[x, y] == 4)
+                    {
+                        texture.SetPixel(x, y, Color.yellow);
+                    }
+                    else
+                    {
+                        texture.SetPixel(x, y, Color.black);
+                    }
                 }
             }
             cellStates = newStates;
         }
         GetInput();
+
+        texture.Apply();
+        meshRenderer.sharedMaterial.mainTexture = texture;
     }
 
     void UpdateTexture()
@@ -167,6 +187,27 @@ public class CellManaging : MonoBehaviour
 
     void GetInput()
     {
+        if (Input.GetKey(KeyCode.Y))
+        {
+            Draw(0, erasingRadius);
+        }
+        if (Input.GetKey(KeyCode.U))
+        {
+            Draw(1, drawingRadius);
+        }
+        if (Input.GetKey(KeyCode.I))
+        {
+            Draw(2, drawingRadius);
+        }
+        if (Input.GetKey(KeyCode.O))
+        {
+            Draw(3, drawingRadius);
+        }
+        if (Input.GetKey(KeyCode.P))
+        {
+            Draw(4, drawingRadius);
+        }
+        
         if (Input.GetKeyDown(KeyCode.Space))
         {
             paused = !paused;
@@ -217,7 +258,7 @@ public class CellManaging : MonoBehaviour
             }
         }
     }
-    void Draw()
+    void Draw(int drawingCellState, int radius)
     {
         Vector2 coordinates;
         coordinates = mainCam.ScreenToWorldPoint(new(Input.mousePosition.x, Input.mousePosition.y, 10));
@@ -227,30 +268,20 @@ public class CellManaging : MonoBehaviour
         coordinates.y -= 5;
 
         // multiply make the x and y range from 0 to 300, just like the two-dimensional array storing the cell states
-        coordinates.x *= -30;
-        coordinates.y *= -30;
+        coordinates.x *= -mapSizeX/ 10;
+        coordinates.y *= -mapSizeY / 10;
 
-        if (Input.GetKey(KeyCode.Y))
+        for (int x = -radius; x <= radius; x++)
         {
-            cellStates[(int)coordinates.x, (int)coordinates.y] = 0;
+            for (int y = -radius; y <= radius; y++)
+            {
+                try
+                {
+                    cellStates[(int)coordinates.x + x, (int)coordinates.y + y] = drawingCellState;
+                }
+                catch { }
+            }
         }
-        else if (Input.GetKey(KeyCode.U))
-        {
-            cellStates[(int)coordinates.x, (int)coordinates.y] = 1;
-        }
-        else if (Input.GetKey(KeyCode.I))
-        {
-            cellStates[(int)coordinates.x, (int)coordinates.y] = 2;
-        }
-        else if (Input.GetKey(KeyCode.O))
-        {
-            cellStates[(int)coordinates.x, (int)coordinates.y] = 3;
-        }
-        else if (Input.GetKey(KeyCode.P))
-        {
-            cellStates[(int)coordinates.x, (int)coordinates.y] = 4;
-        }
-        
     }
 }
 
