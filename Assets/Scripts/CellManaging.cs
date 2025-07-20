@@ -1,8 +1,8 @@
 using UnityEngine;
-
+using System.Threading.Tasks;
 public class CellManaging : MonoBehaviour
 {
-    public static int mapSizeX = 300, mapSizeY = 300;
+    public static int mapSizeX = 400, mapSizeY = 400;
 
     public int[,] cellStates = new int[mapSizeX, mapSizeY];
     private int[,] startingCellStates = new int[mapSizeX, mapSizeY];
@@ -76,13 +76,16 @@ public class CellManaging : MonoBehaviour
             timer += Time.deltaTime;
         }
 
+        GetInput();
+
         if (timer >= updateInterval)
         {
             timer = 0;
 
             int[,] newStates = new int[mapSizeX, mapSizeY];
+            Color[,] colorBuffer = new Color[mapSizeX, mapSizeY];
 
-            for (int x = 0; x < mapSizeX; x++)
+            Parallel.For(0, mapSizeX, x =>
             {
                 for (int y = 0; y < mapSizeY; y++)
                 {
@@ -108,6 +111,7 @@ public class CellManaging : MonoBehaviour
                     }
 
                     int currentState = cellStates[x, y];
+                    int newState = currentState;
 
                     foreach (string rule in rules)
                     {
@@ -117,39 +121,38 @@ public class CellManaging : MonoBehaviour
 
                         if (currentState == ruleCurrent && livingNeighbors == ruleNeighbors)
                         {
-                            newStates[x, y] = ruleNext;
-                            continue;
+                            newState = ruleNext;
+                            break;
                         }
                     }
 
-                    if (newStates[x, y] == 1)
+                    newStates[x, y] = newState;
+
+                    switch (newState)
                     {
-                        texture.SetPixel(x, y, Color.white);
-                    }
-                    else if (newStates[x, y] == 2)
-                    {
-                        texture.SetPixel(x, y, Color.red);
-                    }
-                    else if (newStates[x, y] == 3)
-                    {
-                        texture.SetPixel(x, y, Color.blue);
-                    }
-                    else if (newStates[x, y] == 4)
-                    {
-                        texture.SetPixel(x, y, Color.yellow);
-                    }
-                    else
-                    {
-                        texture.SetPixel(x, y, Color.black);
+                        case 1: colorBuffer[x, y] = Color.white; break;
+                        case 2: colorBuffer[x, y] = Color.red; break;
+                        case 3: colorBuffer[x, y] = Color.blue; break;
+                        case 4: colorBuffer[x, y] = Color.yellow; break;
+                        default: colorBuffer[x, y] = Color.black; break;
                     }
                 }
-            }
-            cellStates = newStates;
-        }
-        GetInput();
+            });
 
-        texture.Apply();
-        meshRenderer.sharedMaterial.mainTexture = texture;
+            // Now update cell states and apply colors on main thread
+            cellStates = newStates;
+
+            for (int x = 0; x < mapSizeX; x++)
+            {
+                for (int y = 0; y < mapSizeY; y++)
+                {
+                    texture.SetPixel(x, y, colorBuffer[x, y]);
+                }
+            }
+
+            texture.Apply();
+            meshRenderer.sharedMaterial.mainTexture = texture;
+        }
     }
 
     void UpdateTexture()
