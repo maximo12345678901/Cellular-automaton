@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Threading.Tasks;
 public class CellManaging : MonoBehaviour
 {
-    public static int mapSizeX = 400, mapSizeY = 400;
+    public static int mapSizeX = 300, mapSizeY = 300;
 
     public int[,] cellStates = new int[mapSizeX, mapSizeY];
     private int[,] startingCellStates = new int[mapSizeX, mapSizeY];
@@ -30,24 +30,42 @@ public class CellManaging : MonoBehaviour
 
         // Initialize rules
         rules = new string[] {
-        "010",
-        "000",
-        "110",
-        "100",
-        "211",
-        "200",
-        "311",
-        "301",
-        "410",
-        "400",
-        "510",
-        "500",
-        "610",
-        "600",
-        "710",
-        "700",
-        "810",
-        "800"
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "0000",
         };
 
         // Randomize initial state
@@ -89,7 +107,10 @@ public class CellManaging : MonoBehaviour
             {
                 for (int y = 0; y < mapSizeY; y++)
                 {
-                    int livingNeighbors = 0;
+                    int livingWhiteNeighbors = 0;
+                    int livingRedNeighbors = 0;
+                    int livingBlueNeighbors = 0;
+                    int livingYellowNeighbors = 0;
 
                     for (int i = -1; i <= 1; i++)
                     {
@@ -104,7 +125,19 @@ public class CellManaging : MonoBehaviour
                             {
                                 if (cellStates[nx, ny] == 1)
                                 {
-                                    livingNeighbors++;
+                                    livingWhiteNeighbors++;
+                                }
+                                else if (cellStates[nx, ny] == 2)
+                                {
+                                    livingRedNeighbors++;
+                                }
+                                else if (cellStates[nx, ny] == 3)
+                                {
+                                    livingBlueNeighbors++;
+                                }
+                                else if (cellStates[nx, ny] == 4)
+                                {
+                                    livingYellowNeighbors++;
                                 }
                             }
                         }
@@ -116,10 +149,26 @@ public class CellManaging : MonoBehaviour
                     foreach (string rule in rules)
                     {
                         int ruleNeighbors = rule[0] - '0';
-                        int ruleCurrent = rule[1] - '0';
-                        int ruleNext = rule[2] - '0';
+                        int ruleNeighborType = rule[1] - '0';
+                        int ruleCurrent = rule[2] - '0';
+                        int ruleNext = rule[3] - '0';
 
-                        if (currentState == ruleCurrent && livingNeighbors == ruleNeighbors)
+                        if (ruleNeighborType == 1 && currentState == ruleCurrent && livingWhiteNeighbors == ruleNeighbors)
+                        {
+                            newState = ruleNext;
+                            break;
+                        }
+                        else if (ruleNeighborType == 2 && currentState == ruleCurrent && livingRedNeighbors == ruleNeighbors)
+                        {
+                            newState = ruleNext;
+                            break;
+                        }
+                        else if (ruleNeighborType == 3 && currentState == ruleCurrent && livingBlueNeighbors == ruleNeighbors)
+                        {
+                            newState = ruleNext;
+                            break;
+                        }
+                        else if (ruleNeighborType == 4 && currentState == ruleCurrent && livingYellowNeighbors == ruleNeighbors)
                         {
                             newState = ruleNext;
                             break;
@@ -133,7 +182,7 @@ public class CellManaging : MonoBehaviour
                         case 1: colorBuffer[x, y] = Color.white; break;
                         case 2: colorBuffer[x, y] = Color.red; break;
                         case 3: colorBuffer[x, y] = Color.blue; break;
-                        case 4: colorBuffer[x, y] = Color.yellow; break;
+                        case 4: colorBuffer[x, y] = Color.green; break;
                         default: colorBuffer[x, y] = Color.black; break;
                     }
                 }
@@ -175,7 +224,7 @@ public class CellManaging : MonoBehaviour
                 }
                 else if (cellStates[x, y] == 4)
                 {
-                    texture.SetPixel(x, y, Color.yellow);
+                    texture.SetPixel(x, y, Color.green);
                 }
                 else
                 {
@@ -194,19 +243,19 @@ public class CellManaging : MonoBehaviour
         {
             Draw(0, erasingRadius);
         }
-        if (Input.GetKey(KeyCode.U))
+        else if (Input.GetKey(KeyCode.U))
         {
             Draw(1, drawingRadius);
         }
-        if (Input.GetKey(KeyCode.I))
+        else if (Input.GetKey(KeyCode.I))
         {
             Draw(2, drawingRadius);
         }
-        if (Input.GetKey(KeyCode.O))
+        else if (Input.GetKey(KeyCode.O))
         {
             Draw(3, drawingRadius);
         }
-        if (Input.GetKey(KeyCode.P))
+        else if (Input.GetKey(KeyCode.P))
         {
             Draw(4, drawingRadius);
         }
@@ -270,8 +319,8 @@ public class CellManaging : MonoBehaviour
         coordinates.x -= 5;
         coordinates.y -= 5;
 
-        // multiply make the x and y range from 0 to 300, just like the two-dimensional array storing the cell states
-        coordinates.x *= -mapSizeX/ 10;
+        // multiply make the x and y range from 0 to the map size, just like the two-dimensional array storing the cell states
+        coordinates.x *= -mapSizeX  / 10;
         coordinates.y *= -mapSizeY / 10;
 
         for (int x = -radius; x <= radius; x++)

@@ -24,13 +24,19 @@ public class InformationDisplay : MonoBehaviour
         for (int i = 0; i < cellManagingScript.rules.Length; i++)
         {
             string rule = cellManagingScript.rules[i];
+
             if (i == selectedRuleIndex)
             {
-                sb.AppendLine($"<mark=#ffcc0077><b>{rule}</b></mark>");
+                sb.Append($"<mark=#ffcc0077><b>{rule}</b></mark>  ");
             }
             else
             {
-                sb.AppendLine(rule);
+                sb.Append($"{rule}   ");
+            }
+
+            if (i % 2 == 1)
+            {
+                sb.AppendLine();
             }
         }
 
@@ -65,7 +71,7 @@ public class InformationDisplay : MonoBehaviour
 
             if (selectedRuleIndex != -1)
             {
-                if (currentInput.Length == 3)
+                if (currentInput.Length == 4)
                 {
                     cellManagingScript.rules[selectedRuleIndex] = currentInput;
                     currentInput = "";
