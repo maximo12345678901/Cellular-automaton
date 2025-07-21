@@ -206,7 +206,7 @@ public class CellManaging : MonoBehaviour
 
     void UpdateTexture()
     {
-        for (int x = 0; x < mapSizeX; x++)
+        for (int x = 0; x < mapSizeY; x++)
         {
             for (int y = 0; y < mapSizeY; y++)
             {
@@ -320,10 +320,10 @@ public class CellManaging : MonoBehaviour
         coordinates.y -= 5;
 
         // multiply make the x and y range from 0 to the map size, just like the two-dimensional array storing the cell states
-        coordinates.x *= -mapSizeX  / 10;
+        coordinates.x *= -mapSizeX / 10;
         coordinates.y *= -mapSizeY / 10;
 
-        for (int x = -radius; x <= radius; x++)
+        Parallel.For(-radius, radius, x =>
         {
             for (int y = -radius; y <= radius; y++)
             {
@@ -333,7 +333,9 @@ public class CellManaging : MonoBehaviour
                 }
                 catch { }
             }
-        }
+        });
+        
+        UpdateTexture();
     }
 }
 
